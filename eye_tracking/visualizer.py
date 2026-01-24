@@ -23,8 +23,8 @@ class Visualizer:
         """
         try:
             plt.style.use(style)
-        except:
-            # Fallback to default style
+        except (OSError, ValueError):
+            # Fallback to default style if requested style is not available
             pass
         sns.set_palette("husl")
     

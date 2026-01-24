@@ -2,7 +2,7 @@
 Disease-specific analysis modules for detecting neurological and developmental disorders.
 """
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 import numpy as np
 from .data_models import EyeTrackingData
 
@@ -18,7 +18,7 @@ class ParkinsonsDetector:
     - Square wave jerks
     """
     
-    def analyze(self, features: Dict[str, float]) -> Dict[str, any]:
+    def analyze(self, features: Dict[str, float]) -> Dict[str, Any]:
         """
         Analyze features for Parkinson's indicators.
         
@@ -92,7 +92,7 @@ class AlzheimersDetector:
     - Increased fixation duration
     """
     
-    def analyze(self, features: Dict[str, float]) -> Dict[str, any]:
+    def analyze(self, features: Dict[str, float]) -> Dict[str, Any]:
         """
         Analyze features for Alzheimer's indicators.
         
@@ -166,7 +166,7 @@ class ASDDetector:
     - Increased fixation on peripheral regions
     """
     
-    def analyze(self, features: Dict[str, float]) -> Dict[str, any]:
+    def analyze(self, features: Dict[str, float]) -> Dict[str, Any]:
         """
         Analyze features for ASD indicators.
         
@@ -240,7 +240,7 @@ class ADHDDetector:
     - Difficulty maintaining attention
     """
     
-    def analyze(self, features: Dict[str, float]) -> Dict[str, any]:
+    def analyze(self, features: Dict[str, float]) -> Dict[str, Any]:
         """
         Analyze features for ADHD indicators.
         

@@ -2,7 +2,7 @@
 Main disease analyzer that coordinates the entire analysis pipeline.
 """
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from .data_models import EyeTrackingData
 from .preprocessor import EyeTrackingPreprocessor
 from .feature_extractor import FeatureExtractor
@@ -30,7 +30,7 @@ class DiseaseAnalyzer:
         self.adhd_detector = ADHDDetector()
     
     def analyze(self, data: EyeTrackingData, 
-                diseases: Optional[List[str]] = None) -> Dict[str, any]:
+                diseases: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Perform complete analysis on eye tracking data.
         
@@ -78,7 +78,7 @@ class DiseaseAnalyzer:
         
         return results
     
-    def _generate_summary(self, disease_analysis: Dict[str, Dict]) -> Dict[str, any]:
+    def _generate_summary(self, disease_analysis: Dict[str, Dict]) -> Dict[str, Any]:
         """
         Generate summary of all disease analyses.
         
@@ -133,7 +133,7 @@ class DiseaseAnalyzer:
         else:
             return "High"
     
-    def generate_report(self, results: Dict[str, any]) -> str:
+    def generate_report(self, results: Dict[str, Any]) -> str:
         """
         Generate a human-readable report from analysis results.
         
