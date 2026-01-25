@@ -27,6 +27,14 @@ from eye_tracking.visualizer import Visualizer
 
 # Initialize Flask app
 app = Flask(__name__)
+
+# Security check for production
+if os.environ.get('FLASK_ENV') == 'production':
+    if os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production') == 'dev-secret-key-change-in-production':
+        raise RuntimeError("SECRET_KEY must be set in production. Set the SECRET_KEY environment variable.")
+    if os.environ.get('JWT_SECRET_KEY', 'jwt-secret-key-change-in-production') == 'jwt-secret-key-change-in-production':
+        raise RuntimeError("JWT_SECRET_KEY must be set in production. Set the JWT_SECRET_KEY environment variable.")
+
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///disease_detection.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -271,8 +279,11 @@ def update_profile(current_user):
             current_user.first_name = data['first_name']
         if 'last_name' in data:
             current_user.last_name = data['last_name']
-        if 'date_of_birth' in data:
-            current_user.date_of_birth = datetime.fromisoformat(data['date_of_birth'])
+        if 'date_of_birth' in data and data['date_of_birth']:
+            try:
+                current_user.date_of_birth = datetime.fromisoformat(data['date_of_birth'])
+            except (ValueError, TypeError):
+                return jsonify({'message': 'Invalid date format. Use ISO 8601 format (YYYY-MM-DD)'}), 400
         
         db.session.commit()
         

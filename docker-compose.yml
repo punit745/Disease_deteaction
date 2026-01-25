@@ -11,7 +11,7 @@ services:
       - FLASK_ENV=production
       - SECRET_KEY=${SECRET_KEY:-change-this-secret-key-in-production}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-this-jwt-secret-in-production}
-      - DATABASE_URL=postgresql://disease_user:disease_pass@db:5432/disease_detection
+      - DATABASE_URL=postgresql://${DB_USER:-disease_user}:${DB_PASSWORD:-disease_pass}@db:5432/${DB_NAME:-disease_detection}
       - DEBUG=False
     volumes:
       - ./uploads:/app/uploads
@@ -27,9 +27,11 @@ services:
     image: postgres:15-alpine
     container_name: disease_detection_db
     environment:
-      - POSTGRES_USER=disease_user
-      - POSTGRES_PASSWORD=disease_pass
-      - POSTGRES_DB=disease_detection
+      # WARNING: Change these credentials for production!
+      # Use Docker secrets or environment variables from .env file
+      - POSTGRES_USER=${DB_USER:-disease_user}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-disease_pass}
+      - POSTGRES_DB=${DB_NAME:-disease_detection}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
