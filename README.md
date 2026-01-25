@@ -1,6 +1,6 @@
 # Eye Tracking Disease Detection System
 
-A comprehensive Python system for detecting early signs of neurological and developmental disorders using eye movement pattern analysis.
+A production-ready web application for detecting early signs of neurological and developmental disorders using eye movement pattern analysis. Built for patients, healthcare providers, and researchers.
 
 ## Overview
 
@@ -15,16 +15,26 @@ Eye movement patterns can highlight cognitive, neurological, or behavioral anoma
 
 ## Features
 
+### Core Disease Detection
+- **Multi-disorder Analysis**: Simultaneous screening for Parkinson's, Alzheimer's, ASD, and ADHD
+- **Risk Scoring**: Quantitative risk assessment for each disorder
+- **Clinical Indicators**: Identification of specific disorder markers
+- **Recommendations**: Actionable recommendations based on risk levels
+
+### Production Web Application (NEW!)
+- **REST API**: Complete RESTful API for integration
+- **User Authentication**: Secure JWT-based authentication system
+- **Patient Profiles**: User registration and profile management
+- **Test History**: Track and analyze results over time
+- **Dashboard**: View test history and risk trends
+- **Secure Storage**: HIPAA-compliant data handling and encryption
+- **Rate Limiting**: API protection against abuse
+- **Health Monitoring**: Built-in health check endpoints
+
 ### Data Processing
 - **Noise Removal**: Savitzky-Golay and median filtering
 - **Event Detection**: Automatic detection of fixations, saccades, and smooth pursuit
 - **Feature Extraction**: Comprehensive extraction of eye movement features
-
-### Disease Detection
-- **Multi-disorder Analysis**: Simultaneous screening for multiple disorders
-- **Risk Scoring**: Quantitative risk assessment for each disorder
-- **Clinical Indicators**: Identification of specific disorder markers
-- **Recommendations**: Actionable recommendations based on risk levels
 
 ### Visualization
 - **Gaze Path Plotting**: Visual representation of eye movements
@@ -32,15 +42,58 @@ Eye movement patterns can highlight cognitive, neurological, or behavioral anoma
 - **Event Distributions**: Statistical distribution of fixations and saccades
 - **Risk Assessment Charts**: Clear visualization of disorder risk scores
 
+### Deployment Ready
+- **Docker Support**: Containerized deployment with Docker Compose
+- **Database Integration**: PostgreSQL for production data storage
+- **Nginx Configuration**: Reverse proxy with SSL/TLS support
+- **CI/CD Ready**: GitHub Actions workflow compatible
+- **Monitoring**: Comprehensive logging and error tracking
+- **Scalability**: Horizontal and vertical scaling support
+
 ## Installation
+
+### Quick Start with Docker (Recommended)
 
 ```bash
 # Clone the repository
 git clone https://github.com/punit745/Disease_deteaction-.git
 cd Disease_deteaction-
 
+# Start all services (web app, database, nginx)
+docker-compose up -d
+
+# Initialize database
+docker-compose exec web python -c "from app import init_db; init_db()"
+
+# Access the application
+# API: http://localhost:5000
+# Web: http://localhost:80
+```
+
+### Manual Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/punit745/Disease_deteaction-.git
+cd Disease_deteaction-
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
 # Install dependencies
 pip install -r requirements.txt
+pip install -r requirements-web.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
+
+# Initialize database
+python -c "from app import init_db; init_db()"
+
+# Run the application
+python app.py
 ```
 
 ## Requirements
@@ -55,7 +108,68 @@ pip install -r requirements.txt
 
 ## Quick Start
 
-### Basic Usage
+### Using the Web API
+
+```python
+import requests
+
+# Base URL
+base_url = "http://localhost:5000"
+
+# 1. Register a patient account
+response = requests.post(f"{base_url}/api/auth/register", json={
+    "email": "patient@example.com",
+    "password": "SecurePassword123!",
+    "first_name": "John",
+    "last_name": "Doe"
+})
+
+# 2. Login and get token
+response = requests.post(f"{base_url}/api/auth/login", json={
+    "email": "patient@example.com",
+    "password": "SecurePassword123!"
+})
+token = response.json()["token"]
+
+# 3. Analyze eye tracking data
+headers = {"Authorization": f"Bearer {token}"}
+response = requests.post(f"{base_url}/api/analyze", 
+    json={
+        "timestamps": [0, 1, 2, ...],
+        "x_positions": [100, 102, 105, ...],
+        "y_positions": [200, 198, 195, ...],
+        "sampling_rate": 1000.0,
+        "task_type": "visual_search"
+    },
+    headers=headers
+)
+results = response.json()
+
+# 4. View test history
+response = requests.get(f"{base_url}/api/results", headers=headers)
+test_history = response.json()
+```
+
+### Using the Command-Line Interface
+
+```bash
+# Register
+python cli.py register
+
+# Analyze sample data
+python cli.py analyze --sample
+
+# View results
+python cli.py results
+
+# Get detailed report
+python cli.py report <test_id>
+
+# View statistics
+python cli.py stats
+```
+
+### Using the Python Library (Standalone)
 
 ```python
 import numpy as np
@@ -84,7 +198,7 @@ report = analyzer.generate_report(results)
 print(report)
 ```
 
-### Running the Example
+### Running the Example Script
 
 ```bash
 python example_usage.py
@@ -188,6 +302,26 @@ visualizer.plot_risk_scores(results, save_path='risk_scores.png')
 
 ## Advanced Usage
 
+### Production Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for comprehensive deployment instructions including:
+- Docker deployment
+- Ubuntu/Debian server setup
+- SSL/TLS configuration
+- Database setup and backups
+- Security best practices
+- Monitoring and maintenance
+
+### API Integration
+
+See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for complete API reference including:
+- All endpoints with examples
+- Authentication flow
+- Request/response formats
+- Error handling
+- Rate limiting
+- Code examples in Python, JavaScript, and cURL
+
 ### Analyzing Specific Disorders
 
 ```python
@@ -233,17 +367,26 @@ print(f"Mean fixation duration: {features['mean_fixation_duration']:.2f} ms")
 
 ```
 Disease_deteaction-/
-├── eye_tracking/
-│   ├── __init__.py              # Package initialization
-│   ├── data_models.py           # Data structures
-│   ├── preprocessor.py          # Data preprocessing
-│   ├── feature_extractor.py    # Feature extraction
-│   ├── disease_detectors.py    # Disease-specific detectors
-│   ├── analyzer.py             # Main analyzer
-│   └── visualizer.py           # Visualization tools
+├── eye_tracking/               # Core analysis library
+│   ├── __init__.py
+│   ├── data_models.py         # Data structures
+│   ├── preprocessor.py        # Data preprocessing
+│   ├── feature_extractor.py   # Feature extraction
+│   ├── disease_detectors.py   # Disease-specific detectors
+│   ├── analyzer.py            # Main analyzer
+│   └── visualizer.py          # Visualization tools
+├── app.py                      # Flask web application
+├── cli.py                      # Command-line interface
 ├── example_usage.py            # Example script
-├── requirements.txt            # Python dependencies
-└── README.md                   # This file
+├── requirements.txt            # Core dependencies
+├── requirements-web.txt        # Web app dependencies
+├── Dockerfile                  # Docker image definition
+├── docker-compose.yml          # Multi-container orchestration
+├── nginx.conf                  # Nginx configuration
+├── .env.example               # Environment variables template
+├── README.md                  # This file
+├── API_DOCUMENTATION.md       # Complete API reference
+└── DEPLOYMENT.md              # Deployment guide
 ```
 
 ## Contributing
