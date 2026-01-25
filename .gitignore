@@ -52,3 +52,19 @@ Thumbs.db
 *.xlsx
 *.h5
 *.hdf5
+
+# Environment and secrets
+.env
+*.db
+*.sqlite
+*.sqlite3
+
+# Upload and log directories
+uploads/
+logs/
+
+# SSL certificates
+ssl/
+*.pem
+*.key
+*.crt
