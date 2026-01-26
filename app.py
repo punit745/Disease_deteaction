@@ -25,8 +25,27 @@ import numpy as np
 from eye_tracking import EyeTrackingData, DiseaseAnalyzer
 from eye_tracking.visualizer import Visualizer
 
+
+# Custom JSON encoder to handle numpy types
+class NumpyEncoder(json.JSONEncoder):
+    """Custom JSON encoder for numpy types."""
+    def default(self, obj):
+        if isinstance(obj, (np.integer, np.int64, np.int32)):
+            return int(obj)
+        elif isinstance(obj, (np.floating, np.float64, np.float32)):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, np.bool_):
+            return bool(obj)
+        return super().default(obj)
+
+
 # Initialize Flask app
 app = Flask(__name__)
+
+# Configure custom JSON encoder for Flask 2.2+ compatibility
+app.json.default = NumpyEncoder().default
 
 # Security check for production
 if os.environ.get('FLASK_ENV') == 'production':
@@ -328,29 +347,29 @@ def analyze_data(current_user):
         test_result = TestResult(
             user_id=current_user.id,
             task_type=eye_data.task_type,
-            duration_ms=eye_data.duration,
-            num_samples=eye_data.num_samples,
-            parkinsons_risk=results['disease_analysis'].get('parkinsons', {}).get('risk_score', 0),
-            alzheimers_risk=results['disease_analysis'].get('alzheimers', {}).get('risk_score', 0),
-            asd_risk=results['disease_analysis'].get('asd', {}).get('risk_score', 0),
-            adhd_risk=results['disease_analysis'].get('adhd', {}).get('risk_score', 0),
+            duration_ms=float(eye_data.duration),
+            num_samples=int(eye_data.num_samples),
+            parkinsons_risk=float(results['disease_analysis'].get('parkinsons', {}).get('risk_score', 0)),
+            alzheimers_risk=float(results['disease_analysis'].get('alzheimers', {}).get('risk_score', 0)),
+            asd_risk=float(results['disease_analysis'].get('asd', {}).get('risk_score', 0)),
+            adhd_risk=float(results['disease_analysis'].get('adhd', {}).get('risk_score', 0)),
             overall_risk_level=results['summary'].get('risk_level'),
             highest_risk_disease=results['summary'].get('highest_risk_disease'),
-            full_results=json.dumps(results['disease_analysis']),
-            features=json.dumps(results['features'])
+            full_results=json.dumps(results['disease_analysis'], cls=NumpyEncoder),
+            features=json.dumps(results['features'], cls=NumpyEncoder)
         )
         
         db.session.add(test_result)
         db.session.commit()
         
+        # Convert results to JSON-serializable format
+        serializable_results = json.loads(json.dumps(results, cls=NumpyEncoder))
+        
         return jsonify({
             'message': 'Analysis completed successfully',
             'test_id': test_result.id,
-            'results': {
-                'disease_analysis': results['disease_analysis'],
-                'summary': results['summary'],
-                'test_date': test_result.test_date.isoformat()
-            }
+            'results': serializable_results,
+            'test_date': test_result.test_date.isoformat()
         }), 200
         
     except Exception as e:

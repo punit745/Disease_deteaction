@@ -52,7 +52,32 @@ Eye movement patterns can highlight cognitive, neurological, or behavioral anoma
 
 ## Installation
 
-### Quick Start with Docker (Recommended)
+### Quick Start - Automated Setup (Recommended for Local Use)
+
+The easiest way to get started on your local machine:
+
+```bash
+# Clone the repository
+git clone https://github.com/punit745/Disease_deteaction-.git
+cd Disease_deteaction-
+
+# Run the automated setup wizard
+python3 local_setup.py
+```
+
+The setup wizard will:
+- ✓ Verify Python version and dependencies
+- ✓ Create a virtual environment
+- ✓ Install all required packages
+- ✓ Generate secure configuration
+- ✓ Initialize the database
+- ✓ Run system validation tests
+
+**Total setup time**: 2-5 minutes
+
+For detailed local deployment instructions, see [LOCAL_DEPLOYMENT_GUIDE.md](LOCAL_DEPLOYMENT_GUIDE.md)
+
+### Quick Start with Docker (Recommended for Production)
 
 ```bash
 # Clone the repository
@@ -209,6 +234,35 @@ This will:
 2. Perform disease analysis
 3. Display a comprehensive diagnostic report
 4. Create visualization plots
+
+### Interactive Demo (NEW!)
+
+Try our interactive demo to explore different scenarios:
+
+```bash
+python interactive_demo.py
+```
+
+Features:
+- Compare normal vs. disease-simulated patterns
+- Run custom analyses with your parameters
+- Generate visualizations for multiple scenarios
+- Interactive menu system for easy exploration
+
+### System Validation
+
+Verify your installation is working correctly:
+
+```bash
+python validate_system.py
+```
+
+This will check:
+- Python version and dependencies
+- All required files
+- Core module functionality
+- Database connectivity
+- Visualization capabilities
 
 ## Data Structure
 
@@ -378,6 +432,9 @@ Disease_deteaction-/
 ├── app.py                      # Flask web application
 ├── cli.py                      # Command-line interface
 ├── example_usage.py            # Example script
+├── interactive_demo.py         # Interactive demo (NEW!)
+├── local_setup.py             # Automated setup wizard (NEW!)
+├── validate_system.py         # System validation script (NEW!)
 ├── requirements.txt            # Core dependencies
 ├── requirements-web.txt        # Web app dependencies
 ├── Dockerfile                  # Docker image definition
@@ -385,8 +442,9 @@ Disease_deteaction-/
 ├── nginx.conf                  # Nginx configuration
 ├── .env.example               # Environment variables template
 ├── README.md                  # This file
+├── LOCAL_DEPLOYMENT_GUIDE.md  # Local deployment guide (NEW!)
 ├── API_DOCUMENTATION.md       # Complete API reference
-└── DEPLOYMENT.md              # Deployment guide
+└── DEPLOYMENT.md              # Production deployment guide
 ```
 
 ## Contributing
