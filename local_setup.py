@@ -73,10 +73,17 @@ def check_pip_installed():
     """Check if pip is installed."""
     print_info("Checking pip installation...")
     try:
-        import pip
-        print_success(f"pip is installed (version {pip.__version__})")
+        # Use subprocess to check pip availability (more reliable)
+        result = subprocess.run(
+            [sys.executable, "-m", "pip", "--version"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        version = result.stdout.strip()
+        print_success(f"pip is installed ({version})")
         return True
-    except ImportError:
+    except subprocess.CalledProcessError:
         print_error("pip is not installed")
         print_info("Please install pip before continuing")
         return False
@@ -241,9 +248,31 @@ def run_system_test():
     python_cmd = get_python_command()
     
     try:
+        # Run a simple inline test instead of relying on external test file
+        test_code = """
+import numpy as np
+from eye_tracking import EyeTrackingData, DiseaseAnalyzer
+
+# Generate test data
+timestamps = np.linspace(0, 1000, 1000)
+x_positions = 500 + np.random.normal(0, 2, 1000)
+y_positions = 400 + np.random.normal(0, 2, 1000)
+
+data = EyeTrackingData(timestamps, x_positions, y_positions, sampling_rate=1000.0)
+
+# Analyze
+analyzer = DiseaseAnalyzer()
+results = analyzer.analyze(data)
+
+# Verify results structure
+assert 'disease_analysis' in results
+assert 'summary' in results
+assert 'parkinsons' in results['disease_analysis']
+
+print('Test passed')
+"""
         result = subprocess.run(
-            [python_cmd, "-m", "unittest", 
-             "test_system.TestDiseaseDetectionCore.test_data_model_creation", "-v"],
+            [python_cmd, "-c", test_code],
             check=True,
             capture_output=True,
             text=True
@@ -252,8 +281,10 @@ def run_system_test():
         return True
     except subprocess.CalledProcessError as e:
         print_error(f"System test failed: {e}")
-        print_error(e.stdout)
-        print_error(e.stderr)
+        if e.stdout:
+            print_error(e.stdout)
+        if e.stderr:
+            print_error(e.stderr)
         return False
 
 

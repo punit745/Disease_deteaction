@@ -286,8 +286,9 @@ def run_scenario_comparison():
             color = Colors.FAIL
         
         print(f"  {scenario_name:30s} ", end="")
-        print_colored(f"{risk_level:10s}", color), 
+        print_colored(f"{risk_level:10s}", color)
         print(f"  (Highest: {highest_risk})")
+
     
     print()
     print_colored(f"✓ Demo complete! Visualizations saved to: {output_dir}/", Colors.OKGREEN)

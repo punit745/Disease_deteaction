@@ -43,7 +43,9 @@ class NumpyEncoder(json.JSONEncoder):
 
 # Initialize Flask app
 app = Flask(__name__)
-app.json_encoder = NumpyEncoder
+
+# Configure custom JSON encoder for Flask 2.2+ compatibility
+app.json.default = NumpyEncoder().default
 
 # Security check for production
 if os.environ.get('FLASK_ENV') == 'production':
