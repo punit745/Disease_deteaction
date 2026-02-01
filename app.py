@@ -507,10 +507,22 @@ def get_statistics(current_user):
         return jsonify({'message': f'Failed to calculate statistics: {str(e)}'}), 500
 
 
-# Web UI Routes (for future frontend)
+# Web UI Routes
 @app.route('/')
 def index():
-    """Home page."""
+    """Home page - serves the landing page."""
+    return render_template('index.html')
+
+
+@app.route('/dashboard')
+def dashboard():
+    """Dashboard page - for authenticated users."""
+    return render_template('dashboard.html')
+
+
+@app.route('/api')
+def api_info():
+    """API info endpoint."""
     return jsonify({
         'message': 'Disease Detection API',
         'version': '1.0.0',

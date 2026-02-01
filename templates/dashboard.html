@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - NeuroScan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+
+<body class="dashboard-body">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="/" class="logo">
+                <span class="logo-icon">👁️</span>
+                <span class="logo-text">NeuroScan</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-section="overview">
+                <span class="nav-icon">📊</span>
+                Overview
+            </a>
+            <a href="#" class="nav-item" data-section="new-test">
+                <span class="nav-icon">🔬</span>
+                New Test
+            </a>
+            <a href="#" class="nav-item" data-section="history">
+                <span class="nav-icon">📋</span>
+                Test History
+            </a>
+            <a href="#" class="nav-item" data-section="profile">
+                <span class="nav-icon">👤</span>
+                Profile
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="btn btn-ghost btn-sm" onclick="logout()">
+                <span>🚪</span> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <h1 id="page-title">Overview</h1>
+            </div>
+            <div class="header-right">
+                <span class="user-greeting">Welcome, <span id="userName"></span></span>
+            </div>
+        </header>
+
+        <!-- Overview Section -->
+        <section class="dashboard-section active" id="overview-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="totalTests">0</span>
+                        <span class="stat-label">Total Tests</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="lastTestDate">-</span>
+                        <span class="stat-label">Last Test</span>
+                    </div>
+                </div>
+                <div class="stat-card risk-low">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="lowRiskCount">0</span>
+                        <span class="stat-label">Low Risk Results</span>
+                    </div>
+                </div>
+                <div class="stat-card risk-high">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="highRiskCount">0</span>
+                        <span class="stat-label">High Risk Alerts</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card recent-results">
+                    <div class="card-header">
+                        <h3>Recent Results</h3>
+                        <a href="#" onclick="showSection('history')">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div id="recentResults" class="results-list">
+                            <p class="empty-state">No tests yet. Start your first screening!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card quick-actions">
+                    <div class="card-header">
+                        <h3>Quick Actions</h3>
+                    </div>
+                    <div class="card-body">
+                        <button class="action-btn primary" onclick="showSection('new-test')">
+                            <span class="action-icon">🔬</span>
+                            <span class="action-text">Start New Test</span>
+                        </button>
+                        <button class="action-btn" onclick="runSampleAnalysis()">
+                            <span class="action-icon">📊</span>
+                            <span class="action-text">Run Sample Analysis</span>
+                        </button>
+                        <button class="action-btn" onclick="showSection('history')">
+                            <span class="action-icon">📋</span>
+                            <span class="action-text">View Test History</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Test Section -->
+        <section class="dashboard-section" id="new-test-section">
+            <div class="card test-card">
+                <div class="card-header">
+                    <h3>Start Eye Tracking Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <div class="test-options">
+                        <div class="test-option" onclick="selectTestType('visual_search')">
+                            <div class="option-icon">🔍</div>
+                            <h4>Visual Search Test</h4>
+                            <p>Follow targets on screen while we analyze your eye movements</p>
+                        </div>
+                        <div class="test-option" onclick="selectTestType('reading')">
+                            <div class="option-icon">📖</div>
+                            <h4>Reading Test</h4>
+                            <p>Read text passages while we track saccade patterns</p>
+                        </div>
+                        <div class="test-option active" onclick="selectTestType('sample')">
+                            <div class="option-icon">📊</div>
+                            <h4>Sample Analysis</h4>
+                            <p>Quick demo using synthetic eye tracking data</p>
+                        </div>
+                    </div>
+                    <div class="test-actions">
+                        <button class="btn btn-primary btn-lg" id="startTestBtn" onclick="startTest()">
+                            Start Analysis
+                        </button>
+                    </div>
+                    <div id="testProgress" class="test-progress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <p class="progress-text">Analyzing eye movement patterns...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Display -->
+            <div class="card results-card" id="resultsCard" style="display: none;">
+                <div class="card-header">
+                    <h3>Analysis Results</h3>
+                </div>
+                <div class="card-body">
+                    <div class="results-summary" id="resultsSummary"></div>
+                    <div class="risk-breakdown" id="riskBreakdown"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section class="dashboard-section" id="history-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Test History</h3>
+                </div>
+                <div class="card-body">
+                    <div id="historyList" class="history-list">
+                        <p class="empty-state">Loading test history...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section class="dashboard-section" id="profile-section">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Profile Settings</h3>
+                </div>
+                <div class="card-body">
+                    <form id="profileForm" onsubmit="updateProfile(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profileFirstName">First Name</label>
+                                <input type="text" id="profileFirstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profileLastName">Last Name</label>
+                                <input type="text" id="profileLastName" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="profileEmail">Email</label>
+                            <input type="email" id="profileEmail" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="profileDob">Date of Birth</label>
+                            <input type="date" id="profileDob">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+
+</html>
