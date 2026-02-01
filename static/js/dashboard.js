@@ -2,7 +2,7 @@
    NeuroScan - Dashboard JavaScript
 ======================================== */
 
-let selectedTestType = 'sample';
+let selectedTestType = 'webcam';
 
 // Initialize dashboard on load
 document.addEventListener('DOMContentLoaded', function () {
@@ -147,13 +147,19 @@ function selectTestType(type) {
 
 // Start test
 async function startTest() {
+    if (selectedTestType === 'webcam') {
+        // Navigate to the webcam eye tracking page
+        window.location.href = '/eye-test';
+        return;
+    }
+
     showTestProgress();
 
     if (selectedTestType === 'sample') {
         await runSampleAnalysis();
     } else {
-        // For other test types, we'd need webcam integration
-        await runSampleAnalysis(); // For now, run sample
+        // For visual_search and other types, run sample for now
+        await runSampleAnalysis();
     }
 }
 

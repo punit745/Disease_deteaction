@@ -133,17 +133,17 @@
                 </div>
                 <div class="card-body">
                     <div class="test-options">
+                        <div class="test-option active" onclick="selectTestType('webcam')">
+                            <div class="option-icon">📷</div>
+                            <h4>Webcam Eye Tracking</h4>
+                            <p>Real-time analysis using your webcam (Recommended)</p>
+                        </div>
                         <div class="test-option" onclick="selectTestType('visual_search')">
                             <div class="option-icon">🔍</div>
                             <h4>Visual Search Test</h4>
                             <p>Follow targets on screen while we analyze your eye movements</p>
                         </div>
-                        <div class="test-option" onclick="selectTestType('reading')">
-                            <div class="option-icon">📖</div>
-                            <h4>Reading Test</h4>
-                            <p>Read text passages while we track saccade patterns</p>
-                        </div>
-                        <div class="test-option active" onclick="selectTestType('sample')">
+                        <div class="test-option" onclick="selectTestType('sample')">
                             <div class="option-icon">📊</div>
                             <h4>Sample Analysis</h4>
                             <p>Quick demo using synthetic eye tracking data</p>

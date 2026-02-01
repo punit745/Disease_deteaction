@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Tracking Test - NeuroScan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/eye_test.css') }}">
+</head>
+
+<body class="eye-test-body">
+    <!-- Header -->
+    <header class="test-header">
+        <a href="/dashboard" class="back-btn">
+            ← Back to Dashboard
+        </a>
+        <div class="logo">
+            <span class="logo-icon">👁️</span>
+            <span class="logo-text">NeuroScan</span>
+        </div>
+        <div class="test-status" id="testStatus">
+            <span class="status-dot"></span>
+            <span id="statusText">Initializing...</span>
+        </div>
+    </header>
+
+    <!-- Main Test Area -->
+    <main class="test-main">
+        <!-- Step 1: Introduction -->
+        <section class="test-step active" id="step-intro">
+            <div class="step-content">
+                <div class="intro-icon">👁️</div>
+                <h1>Real-Time Eye Tracking Test</h1>
+                <p class="intro-subtitle">
+                    This test analyzes your eye movement patterns to screen for early signs of neurological conditions.
+                </p>
+
+                <div class="requirements-card">
+                    <h3>Before You Begin</h3>
+                    <ul class="requirements-list">
+                        <li class="requirement" id="req-camera">
+                            <span class="req-icon">📷</span>
+                            <span class="req-text">Webcam access required</span>
+                            <span class="req-status pending">Checking...</span>
+                        </li>
+                        <li class="requirement" id="req-lighting">
+                            <span class="req-icon">💡</span>
+                            <span class="req-text">Good lighting on your face</span>
+                            <span class="req-status info">Manual check</span>
+                        </li>
+                        <li class="requirement" id="req-position">
+                            <span class="req-icon">🪑</span>
+                            <span class="req-text">Sit comfortably, face centered</span>
+                            <span class="req-status info">Manual check</span>
+                        </li>
+                        <li class="requirement" id="req-glasses">
+                            <span class="req-icon">👓</span>
+                            <span class="req-text">Remove glasses if possible</span>
+                            <span class="req-status info">Optional</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="test-duration">
+                    <span class="duration-icon">⏱️</span>
+                    <span>Test duration: approximately 2-3 minutes</span>
+                </div>
+
+                <button class="btn btn-primary btn-lg" id="startBtn" onclick="startCalibration()">
+                    Start Test
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Step 2: Calibration -->
+        <section class="test-step" id="step-calibration">
+            <div class="calibration-container">
+                <div class="calibration-header">
+                    <h2>Calibration</h2>
+                    <p>Look at each dot and click it 5 times. This helps us track your eyes accurately.</p>
+                    <div class="calibration-progress">
+                        <span id="calibrationCount">0</span> / 9 points calibrated
+                    </div>
+                </div>
+
+                <!-- Calibration Points -->
+                <div class="calibration-grid" id="calibrationGrid">
+                    <div class="calibration-point" data-point="1" onclick="calibratePoint(this)"></div>
+                    <div class="calibration-point" data-point="2" onclick="calibratePoint(this)"></div>
+                    <div class="calibration-point" data-point="3" onclick="calibratePoint(this)"></div>
+                    <div class="calibration-point" data-point="4" onclick="calibratePoint(this)"></div>
+                    <div class="calibration-point" data-point="5" onclick="calibratePoint(this)"></div>
+                    <div class="calibration-point" data-point="6" onclick="calibratePoint(this)"></div>
+                    <div class="calibration-point" data-point="7" onclick="calibratePoint(this)"></div>
+                    <div class="calibration-point" data-point="8" onclick="calibratePoint(this)"></div>
+                    <div class="calibration-point" data-point="9" onclick="calibratePoint(this)"></div>
+                </div>
+
+                <button class="btn btn-primary" id="skipCalibrationBtn" onclick="skipCalibration()"
+                    style="display: none;">
+                    Continue to Test →
+                </button>
+            </div>
+        </section>
+
+        <!-- Step 3: Eye Tracking Test -->
+        <section class="test-step" id="step-tracking">
+            <div class="tracking-container">
+                <div class="tracking-header">
+                    <h2 id="testTitle">Visual Search Test</h2>
+                    <p id="testInstruction">Follow the moving target with your eyes</p>
+                    <div class="tracking-timer">
+                        <span class="timer-icon">⏱️</span>
+                        <span id="remainingTime">30</span>s remaining
+                    </div>
+                </div>
+
+                <!-- Test Canvas -->
+                <div class="test-canvas" id="testCanvas">
+                    <div class="tracking-target" id="trackingTarget"></div>
+                    <div class="gaze-indicator" id="gazeIndicator"></div>
+                </div>
+
+                <div class="data-collection-status">
+                    <span class="pulse-dot"></span>
+                    <span>Collecting eye movement data...</span>
+                    <span id="dataPointCount">0</span> data points
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 4: Processing -->
+        <section class="test-step" id="step-processing">
+            <div class="processing-container">
+                <div class="processing-animation">
+                    <div class="processing-rings">
+                        <div class="ring ring-1"></div>
+                        <div class="ring ring-2"></div>
+                        <div class="ring ring-3"></div>
+                    </div>
+                    <div class="processing-icon">🧠</div>
+                </div>
+                <h2>Analyzing Your Data</h2>
+                <p>Our AI is processing your eye movement patterns...</p>
+                <div class="processing-steps">
+                    <div class="proc-step active" id="proc-preprocess">
+                        <span class="proc-check">✓</span>
+                        <span>Preprocessing data</span>
+                    </div>
+                    <div class="proc-step" id="proc-features">
+                        <span class="proc-check">✓</span>
+                        <span>Extracting features</span>
+                    </div>
+                    <div class="proc-step" id="proc-analyze">
+                        <span class="proc-check">✓</span>
+                        <span>Disease pattern analysis</span>
+                    </div>
+                    <div class="proc-step" id="proc-report">
+                        <span class="proc-check">✓</span>
+                        <span>Generating report</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 5: Results -->
+        <section class="test-step" id="step-results">
+            <div class="results-container">
+                <div class="results-header">
+                    <h2>Analysis Complete</h2>
+                    <p>Here are your screening results</p>
+                </div>
+
+                <div class="overall-result" id="overallResult">
+                    <div class="result-badge low">
+                        <span class="badge-icon">✅</span>
+                        <span class="badge-text">Low Risk</span>
+                    </div>
+                    <p class="result-message" id="resultMessage">
+                        Your eye movement patterns appear within normal ranges.
+                    </p>
+                </div>
+
+                <div class="disease-results" id="diseaseResults">
+                    <!-- Filled dynamically -->
+                </div>
+
+                <div class="results-disclaimer">
+                    <span class="disclaimer-icon">⚠️</span>
+                    <p>This is a screening tool only. Please consult a healthcare professional for clinical diagnosis.
+                    </p>
+                </div>
+
+                <div class="results-actions">
+                    <button class="btn btn-primary" onclick="goToDashboard()">
+                        View in Dashboard
+                    </button>
+                    <button class="btn btn-outline" onclick="retakeTest()">
+                        Take Another Test
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Webcam Preview (floating) -->
+    <div class="webcam-preview" id="webcamPreview">
+        <video id="webcamVideo" autoplay playsinline></video>
+        <div class="webcam-overlay">
+            <div class="face-guide"></div>
+        </div>
+        <div class="webcam-label">Your Camera</div>
+    </div>
+
+    <!-- WebGazer.js Library -->
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/eye_test.js') }}"></script>
+</body>
+
+</html>

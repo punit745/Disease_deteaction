@@ -536,6 +536,12 @@ def api_info():
     })
 
 
+@app.route('/eye-test')
+def eye_test():
+    """Eye tracking test page - webcam-based eye tracking."""
+    return render_template('eye_test.html')
+
+
 # Error handlers
 @app.errorhandler(404)
 def not_found(error):
