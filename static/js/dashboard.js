@@ -51,6 +51,7 @@ function showSection(sectionId) {
         'overview': 'Overview',
         'new-test': 'New Test',
         'history': 'Test History',
+        'progress': 'Progress Tracking',
         'profile': 'Profile'
     };
     document.getElementById('page-title').textContent = titles[sectionId] || 'Dashboard';
@@ -60,6 +61,8 @@ function showSection(sectionId) {
         loadTestHistory();
     } else if (sectionId === 'profile') {
         loadProfile();
+    } else if (sectionId === 'progress') {
+        loadProgressData();
     }
 }
 
@@ -481,5 +484,420 @@ async function updateProfile(event) {
     } catch (error) {
         console.error('Profile update error:', error);
         alert('Connection error. Please try again.');
+    }
+}
+
+/* ========================================
+   Progress Tracking & Charts
+======================================== */
+
+let trendChart = null;
+let riskDistChart = null;
+let diseaseCompChart = null;
+let currentTimeRange = 30;
+let progressData = null;
+
+// Load progress data
+async function loadProgressData() {
+    try {
+        const resultsResponse = await apiRequest('/api/results?per_page=100');
+        if (resultsResponse && resultsResponse.ok) {
+            const data = await resultsResponse.json();
+            progressData = data.results || [];
+
+            if (progressData.length >= 2) {
+                document.getElementById('noTrendData').style.display = 'none';
+                document.getElementById('trendChart').style.display = 'block';
+                renderCharts();
+            } else {
+                document.getElementById('noTrendData').style.display = 'block';
+                document.getElementById('trendChart').style.display = 'none';
+            }
+
+            updateProgressStats();
+        }
+    } catch (error) {
+        console.error('Error loading progress data:', error);
+    }
+}
+
+// Set time range
+function setTimeRange(range) {
+    currentTimeRange = range;
+
+    // Update button states
+    document.querySelectorAll('.range-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.range == range);
+    });
+
+    renderCharts();
+}
+
+// Filter data by time range
+function filterDataByRange(data) {
+    if (currentTimeRange === 'all') return data;
+
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - currentTimeRange);
+
+    return data.filter(item => new Date(item.test_date) >= cutoff);
+}
+
+// Render all charts
+function renderCharts() {
+    if (!progressData) return;
+
+    const filteredData = filterDataByRange(progressData);
+
+    renderTrendChart(filteredData);
+    renderRiskDistributionChart(filteredData);
+    renderDiseaseComparisonChart(filteredData);
+}
+
+// Render trend line chart
+function renderTrendChart(data) {
+    const ctx = document.getElementById('trendChart');
+    if (!ctx) return;
+
+    // Destroy existing chart
+    if (trendChart) {
+        trendChart.destroy();
+    }
+
+    // Prepare data - sort by date
+    const sortedData = [...data].sort((a, b) => new Date(a.test_date) - new Date(b.test_date));
+
+    const labels = sortedData.map(d => {
+        const date = new Date(d.test_date);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+
+    trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: "Parkinson's",
+                    data: sortedData.map(d => (d.parkinsons_risk || 0) * 100),
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: "Alzheimer's",
+                    data: sortedData.map(d => (d.alzheimers_risk || 0) * 100),
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'ASD',
+                    data: sortedData.map(d => (d.asd_risk || 0) * 100),
+                    borderColor: '#ec4899',
+                    backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                },
+                {
+                    label: 'ADHD',
+                    data: sortedData.map(d => (d.adhd_risk || 0) * 100),
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.4,
+                    fill: false,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 15, 20, 0.95)',
+                    titleColor: '#fff',
+                    bodyColor: '#a0a0b0',
+                    borderColor: 'rgba(139, 92, 246, 0.3)',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function (context) {
+                            return `${context.dataset.label}: ${context.raw.toFixed(1)}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.5)'
+                    }
+                },
+                y: {
+                    min: 0,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        callback: function (value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Render risk distribution pie chart
+function renderRiskDistributionChart(data) {
+    const ctx = document.getElementById('riskDistributionChart');
+    if (!ctx) return;
+
+    if (riskDistChart) {
+        riskDistChart.destroy();
+    }
+
+    const distribution = {
+        Low: data.filter(d => d.overall_risk_level === 'Low').length,
+        Moderate: data.filter(d => d.overall_risk_level === 'Moderate').length,
+        High: data.filter(d => d.overall_risk_level === 'High').length
+    };
+
+    riskDistChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Low Risk', 'Moderate Risk', 'High Risk'],
+            datasets: [{
+                data: [distribution.Low, distribution.Moderate, distribution.High],
+                backgroundColor: [
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(239, 68, 68, 0.8)'
+                ],
+                borderColor: [
+                    '#22c55e',
+                    '#f59e0b',
+                    '#ef4444'
+                ],
+                borderWidth: 2,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 15, 20, 0.95)',
+                    titleColor: '#fff',
+                    bodyColor: '#a0a0b0',
+                    callbacks: {
+                        label: function (context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? ((context.raw / total) * 100).toFixed(1) : 0;
+                            return `${context.label}: ${context.raw} tests (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            cutout: '60%'
+        }
+    });
+}
+
+// Render disease comparison bar chart
+function renderDiseaseComparisonChart(data) {
+    const ctx = document.getElementById('diseaseComparisonChart');
+    if (!ctx) return;
+
+    if (diseaseCompChart) {
+        diseaseCompChart.destroy();
+    }
+
+    // Calculate averages
+    const avgParkinsons = data.length > 0 ? (data.reduce((sum, d) => sum + (d.parkinsons_risk || 0), 0) / data.length) * 100 : 0;
+    const avgAlzheimers = data.length > 0 ? (data.reduce((sum, d) => sum + (d.alzheimers_risk || 0), 0) / data.length) * 100 : 0;
+    const avgAsd = data.length > 0 ? (data.reduce((sum, d) => sum + (d.asd_risk || 0), 0) / data.length) * 100 : 0;
+    const avgAdhd = data.length > 0 ? (data.reduce((sum, d) => sum + (d.adhd_risk || 0), 0) / data.length) * 100 : 0;
+
+    diseaseCompChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ["Parkinson's", "Alzheimer's", 'ASD', 'ADHD'],
+            datasets: [{
+                label: 'Average Risk Score',
+                data: [avgParkinsons, avgAlzheimers, avgAsd, avgAdhd],
+                backgroundColor: [
+                    'rgba(245, 158, 11, 0.7)',
+                    'rgba(139, 92, 246, 0.7)',
+                    'rgba(236, 72, 153, 0.7)',
+                    'rgba(34, 197, 94, 0.7)'
+                ],
+                borderColor: [
+                    '#f59e0b',
+                    '#8b5cf6',
+                    '#ec4899',
+                    '#22c55e'
+                ],
+                borderWidth: 2,
+                borderRadius: 6,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 15, 20, 0.95)',
+                    titleColor: '#fff',
+                    bodyColor: '#a0a0b0',
+                    callbacks: {
+                        label: function (context) {
+                            return `Avg Risk: ${context.raw.toFixed(1)}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.6)'
+                    }
+                },
+                y: {
+                    min: 0,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.05)'
+                    },
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.5)',
+                        callback: function (value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Update progress stats
+function updateProgressStats() {
+    if (!progressData || progressData.length === 0) return;
+
+    // Find best improvement
+    if (progressData.length >= 2) {
+        const sortedData = [...progressData].sort((a, b) => new Date(a.test_date) - new Date(b.test_date));
+        const first = sortedData[0];
+        const last = sortedData[sortedData.length - 1];
+
+        const improvements = {
+            "Parkinson's": ((first.parkinsons_risk || 0) - (last.parkinsons_risk || 0)) * 100,
+            "Alzheimer's": ((first.alzheimers_risk || 0) - (last.alzheimers_risk || 0)) * 100,
+            'ASD': ((first.asd_risk || 0) - (last.asd_risk || 0)) * 100,
+            'ADHD': ((first.adhd_risk || 0) - (last.adhd_risk || 0)) * 100
+        };
+
+        const bestKey = Object.keys(improvements).reduce((a, b) => improvements[a] > improvements[b] ? a : b);
+        const bestValue = improvements[bestKey];
+
+        if (bestValue > 0) {
+            document.getElementById('bestImprovement').textContent = `-${bestValue.toFixed(1)}%`;
+            document.getElementById('bestImprovementDetail').textContent = bestKey;
+        } else {
+            document.getElementById('bestImprovement').textContent = 'Stable';
+            document.getElementById('bestImprovementDetail').textContent = 'No significant changes';
+        }
+    }
+
+    // Test consistency - tests this month
+    const thisMonth = new Date();
+    thisMonth.setDate(1);
+    const testsThisMonth = progressData.filter(d => new Date(d.test_date) >= thisMonth).length;
+    document.getElementById('testConsistency').textContent = testsThisMonth;
+    document.getElementById('testConsistencyDetail').textContent = 'Tests this month';
+
+    // Calculate streak (weeks with at least one test)
+    const weekMap = new Map();
+    progressData.forEach(d => {
+        const date = new Date(d.test_date);
+        const weekStart = new Date(date);
+        weekStart.setDate(date.getDate() - date.getDay());
+        const weekKey = weekStart.toISOString().split('T')[0];
+        weekMap.set(weekKey, true);
+    });
+
+    let streak = 0;
+    let currentWeek = new Date();
+    currentWeek.setDate(currentWeek.getDate() - currentWeek.getDay());
+
+    while (weekMap.has(currentWeek.toISOString().split('T')[0])) {
+        streak++;
+        currentWeek.setDate(currentWeek.getDate() - 7);
+    }
+
+    document.getElementById('testStreak').textContent = streak;
+
+    // Overall trend
+    if (progressData.length >= 2) {
+        const sortedData = [...progressData].sort((a, b) => new Date(a.test_date) - new Date(b.test_date));
+        const recentHalf = sortedData.slice(Math.floor(sortedData.length / 2));
+        const olderHalf = sortedData.slice(0, Math.floor(sortedData.length / 2));
+
+        const recentAvg = recentHalf.reduce((sum, d) => sum + (d.parkinsons_risk || 0) + (d.alzheimers_risk || 0) + (d.asd_risk || 0) + (d.adhd_risk || 0), 0) / (recentHalf.length * 4);
+        const olderAvg = olderHalf.reduce((sum, d) => sum + (d.parkinsons_risk || 0) + (d.alzheimers_risk || 0) + (d.asd_risk || 0) + (d.adhd_risk || 0), 0) / (olderHalf.length * 4);
+
+        if (recentAvg < olderAvg - 0.02) {
+            document.getElementById('overallTrend').textContent = '📉 Improving';
+            document.getElementById('overallTrendDetail').textContent = 'Risk scores decreasing';
+        } else if (recentAvg > olderAvg + 0.02) {
+            document.getElementById('overallTrend').textContent = '📈 Increasing';
+            document.getElementById('overallTrendDetail').textContent = 'Monitor closely';
+        } else {
+            document.getElementById('overallTrend').textContent = '➡️ Stable';
+            document.getElementById('overallTrendDetail').textContent = 'Consistent readings';
+        }
     }
 }

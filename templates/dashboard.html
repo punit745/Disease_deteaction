@@ -9,6 +9,8 @@
         rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <!-- Chart.js for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 
 <body class="dashboard-body">
@@ -32,6 +34,10 @@
             <a href="#" class="nav-item" data-section="history">
                 <span class="nav-icon">📋</span>
                 Test History
+            </a>
+            <a href="#" class="nav-item" data-section="progress">
+                <span class="nav-icon">📈</span>
+                Progress Tracking
             </a>
             <a href="#" class="nav-item" data-section="profile">
                 <span class="nav-icon">👤</span>
@@ -184,6 +190,114 @@
                 <div class="card-body">
                     <div id="historyList" class="history-list">
                         <p class="empty-state">Loading test history...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Tracking Section -->
+        <section class="dashboard-section" id="progress-section">
+            <div class="progress-header">
+                <h2>📈 Your Health Progress</h2>
+                <p>Track your risk trends over time across all conditions</p>
+            </div>
+
+            <!-- Time Range Selector -->
+            <div class="time-range-selector">
+                <button class="range-btn active" data-range="7" onclick="setTimeRange(7)">Last 7 Days</button>
+                <button class="range-btn" data-range="30" onclick="setTimeRange(30)">Last 30 Days</button>
+                <button class="range-btn" data-range="90" onclick="setTimeRange(90)">Last 90 Days</button>
+                <button class="range-btn" data-range="all" onclick="setTimeRange('all')">All Time</button>
+            </div>
+
+            <!-- Main Trend Chart -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h3>🔬 Risk Score Trends</h3>
+                    <div class="chart-legend" id="trendLegend">
+                        <span class="legend-item parkinsons">🧠 Parkinson's</span>
+                        <span class="legend-item alzheimers">🧩 Alzheimer's</span>
+                        <span class="legend-item asd">💜 ASD</span>
+                        <span class="legend-item adhd">⚡ ADHD</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                    <div id="noTrendData" class="empty-state" style="display: none;">
+                        <p>📊 Not enough data yet. Complete more tests to see your progress trends!</p>
+                        <button class="btn btn-primary" onclick="showSection('new-test')">Start a Test</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <!-- Risk Distribution Pie Chart -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>📊 Risk Level Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container-small">
+                            <canvas id="riskDistributionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disease Comparison Bar Chart -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3>🎯 Average Risk by Condition</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container-small">
+                            <canvas id="diseaseComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Summary Cards -->
+            <div class="progress-summary-grid">
+                <div class="progress-stat-card improvement">
+                    <div class="stat-header">
+                        <span class="stat-emoji">📉</span>
+                        <h4>Best Improvement</h4>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-value" id="bestImprovement">-</span>
+                        <span class="stat-detail" id="bestImprovementDetail">Complete more tests</span>
+                    </div>
+                </div>
+                <div class="progress-stat-card consistency">
+                    <div class="stat-header">
+                        <span class="stat-emoji">📊</span>
+                        <h4>Test Consistency</h4>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-value" id="testConsistency">-</span>
+                        <span class="stat-detail" id="testConsistencyDetail">Tests this month</span>
+                    </div>
+                </div>
+                <div class="progress-stat-card streak">
+                    <div class="stat-header">
+                        <span class="stat-emoji">🔥</span>
+                        <h4>Testing Streak</h4>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-value" id="testStreak">0</span>
+                        <span class="stat-detail">consecutive weeks</span>
+                    </div>
+                </div>
+                <div class="progress-stat-card overall">
+                    <div class="stat-header">
+                        <span class="stat-emoji">✨</span>
+                        <h4>Overall Trend</h4>
+                    </div>
+                    <div class="stat-body">
+                        <span class="stat-value" id="overallTrend">-</span>
+                        <span class="stat-detail" id="overallTrendDetail">Start tracking</span>
                     </div>
                 </div>
             </div>

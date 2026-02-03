@@ -553,3 +553,247 @@
         padding: 16px;
     }
 }
+
+/* ========================================
+   Progress Tracking Styles
+======================================== */
+
+/* Progress Header */
+.progress-header {
+    margin-bottom: 24px;
+}
+
+.progress-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.progress-header p {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* Time Range Selector */
+.time-range-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.range-btn {
+    padding: 10px 20px;
+    background: var(--bg-tertiary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 25px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+}
+
+.range-btn:hover {
+    background: rgba(139, 92, 246, 0.15);
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+.range-btn.active {
+    background: var(--accent-gradient);
+    border-color: transparent;
+    color: white;
+}
+
+/* Chart Cards */
+.chart-card {
+    margin-bottom: 24px;
+}
+
+.chart-card .card-header {
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.legend-item.parkinsons::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: #f59e0b;
+    border-radius: 3px;
+}
+
+.legend-item.alzheimers::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: #8b5cf6;
+    border-radius: 3px;
+}
+
+.legend-item.asd::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: #ec4899;
+    border-radius: 3px;
+}
+
+.legend-item.adhd::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    background: #22c55e;
+    border-radius: 3px;
+}
+
+/* Chart Container */
+.chart-container {
+    position: relative;
+    height: 350px;
+    width: 100%;
+}
+
+.chart-container-small {
+    position: relative;
+    height: 280px;
+    width: 100%;
+}
+
+/* Charts Grid */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+/* Progress Summary Grid */
+.progress-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.progress-stat-card {
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    transition: all var(--transition-fast);
+}
+
+.progress-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.progress-stat-card .stat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.progress-stat-card .stat-emoji {
+    font-size: 24px;
+}
+
+.progress-stat-card .stat-header h4 {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.progress-stat-card .stat-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.progress-stat-card .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.progress-stat-card .stat-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Card type-specific styles */
+.progress-stat-card.improvement {
+    border-left: 3px solid var(--risk-low);
+}
+
+.progress-stat-card.improvement .stat-value {
+    color: var(--risk-low);
+}
+
+.progress-stat-card.consistency {
+    border-left: 3px solid var(--accent-primary);
+}
+
+.progress-stat-card.consistency .stat-value {
+    color: var(--accent-primary);
+}
+
+.progress-stat-card.streak {
+    border-left: 3px solid #f59e0b;
+}
+
+.progress-stat-card.streak .stat-value {
+    color: #f59e0b;
+}
+
+.progress-stat-card.overall {
+    border-left: 3px solid var(--accent-secondary);
+}
+
+.progress-stat-card.overall .stat-value {
+    color: var(--accent-secondary);
+}
+
+/* Responsive adjustments for charts */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 280px;
+    }
+
+    .chart-container-small {
+        height: 220px;
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .time-range-selector {
+        justify-content: center;
+    }
+
+    .chart-legend {
+        justify-content: center;
+    }
+}
