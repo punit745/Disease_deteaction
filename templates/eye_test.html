@@ -218,8 +218,25 @@
         <div class="webcam-label">Your Camera</div>
     </div>
 
-    <!-- WebGazer.js Library -->
-    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <!-- WebGazer.js Library - Using jsDelivr CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/webgazer@2.1.0/dist/webgazer.min.js"></script>
+    <script>
+        // Check if WebGazer loaded successfully
+        if (typeof webgazer === 'undefined') {
+            console.error('WebGazer failed to load from CDN');
+            document.addEventListener('DOMContentLoaded', function () {
+                const statusEl = document.querySelector('#req-camera .req-status');
+                if (statusEl) {
+                    statusEl.textContent = 'Library error';
+                    statusEl.className = 'req-status error';
+                }
+                document.getElementById('startBtn').disabled = true;
+                alert('Failed to load eye tracking library. Please refresh the page or try a different browser.');
+            });
+        } else {
+            console.log('WebGazer loaded successfully');
+        }
+    </script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script src="{{ url_for('static', filename='js/eye_test.js') }}"></script>
 </body>
