@@ -25,6 +25,12 @@ import numpy as np
 from eye_tracking import EyeTrackingData, DiseaseAnalyzer
 from eye_tracking.visualizer import Visualizer
 
+# Try to import PDF report generator
+try:
+    from eye_tracking.pdf_report import generate_pdf_report, generate_report_filename, PDF_AVAILABLE
+except ImportError:
+    PDF_AVAILABLE = False
+
 
 # Custom JSON encoder to handle numpy types
 class NumpyEncoder(json.JSONEncoder):
@@ -468,6 +474,68 @@ def get_report(current_user, test_id):
         
     except Exception as e:
         return jsonify({'message': f'Failed to generate report: {str(e)}'}), 500
+
+
+@app.route('/api/results/<int:test_id>/pdf', methods=['GET'])
+@token_required
+def download_pdf_report(current_user, test_id):
+    """Generate and download a PDF report for a specific test."""
+    try:
+        # Check if PDF generation is available
+        if not PDF_AVAILABLE:
+            return jsonify({
+                'message': 'PDF generation not available. Please install reportlab: pip install reportlab'
+            }), 503
+        
+        result = TestResult.query.filter_by(id=test_id, user_id=current_user.id).first()
+        
+        if not result:
+            return jsonify({'message': 'Test result not found'}), 404
+        
+        # Parse stored results
+        disease_analysis = json.loads(result.full_results) if result.full_results else {}
+        features = json.loads(result.features) if result.features else {}
+        
+        # Build the analysis results structure for PDF generation
+        analysis_results = {
+            'summary': {
+                'risk_level': result.overall_risk_level or 'Low',
+                'highest_risk_disease': result.highest_risk_disease,
+                'highest_risk_score': max(
+                    result.parkinsons_risk or 0,
+                    result.alzheimers_risk or 0,
+                    result.asd_risk or 0,
+                    result.adhd_risk or 0
+                )
+            },
+            'disease_analysis': disease_analysis,
+            'features': features,
+            'test_date': result.test_date.isoformat(),
+            'task_type': result.task_type
+        }
+        
+        # User info for the report
+        user_info = {
+            'name': f"{current_user.first_name} {current_user.last_name}",
+            'email': current_user.email
+        }
+        
+        # Generate the PDF
+        pdf_stream = generate_pdf_report(analysis_results, user_info)
+        
+        # Generate filename
+        filename = generate_report_filename(str(current_user.id))
+        
+        return send_file(
+            pdf_stream,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=filename
+        )
+        
+    except Exception as e:
+        app.logger.error(f"PDF generation error: {str(e)}")
+        return jsonify({'message': f'Failed to generate PDF report: {str(e)}'}), 500
 
 
 @app.route('/api/statistics', methods=['GET'])

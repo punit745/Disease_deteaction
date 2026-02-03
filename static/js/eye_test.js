@@ -653,6 +653,15 @@ function displayResults(data) {
     showStep('results');
     updateStatus('Complete', 'ready');
 
+    // Store test ID for PDF download
+    currentTestId = data.test_id;
+
+    // Show PDF download button if we have a test ID
+    const pdfBtn = document.getElementById('downloadPdfBtn');
+    if (pdfBtn && currentTestId) {
+        pdfBtn.style.display = 'inline-flex';
+    }
+
     const summary = data.results?.summary || {};
     const diseases = data.results?.disease_analysis || {};
 
@@ -717,4 +726,76 @@ function goToDashboard() {
 
 function retakeTest() {
     window.location.reload();
+}
+
+// Store current test ID for PDF download
+let currentTestId = null;
+
+// Download PDF report
+async function downloadPdfReport() {
+    if (!currentTestId) {
+        alert('No test results available to download');
+        return;
+    }
+
+    try {
+        const token = getToken();
+        if (!token) {
+            alert('Please log in to download reports');
+            return;
+        }
+
+        // Show loading indicator
+        const btn = document.getElementById('downloadPdfBtn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '⏳ Generating...';
+        btn.disabled = true;
+
+        const response = await fetch(`/api/results/${currentTestId}/pdf`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+        if (response.ok) {
+            // Get the filename from Content-Disposition header or use default
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = 'neuroscan_report.pdf';
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1].replace(/['"]/g, '');
+                }
+            }
+
+            // Download the PDF
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            console.log('PDF downloaded successfully');
+        } else {
+            const error = await response.json();
+            alert(error.message || 'Failed to generate PDF report');
+        }
+    } catch (error) {
+        console.error('PDF download error:', error);
+        alert('Failed to download PDF. Please try again.');
+
+        const btn = document.getElementById('downloadPdfBtn');
+        if (btn) {
+            btn.innerHTML = '📥 Download PDF Report';
+            btn.disabled = false;
+        }
+    }
 }

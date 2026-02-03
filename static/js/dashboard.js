@@ -366,10 +366,78 @@ async function viewResult(testId) {
 
         if (response && response.ok) {
             const data = await response.json();
-            alert(data.report || 'No detailed report available');
+
+            // Show result with option to download PDF
+            const downloadPdf = confirm(
+                (data.report || 'Analysis complete.') +
+                '\n\n📥 Would you like to download the PDF report?'
+            );
+
+            if (downloadPdf) {
+                downloadPdfReport(testId);
+            }
         }
     } catch (error) {
         console.error('Error loading result:', error);
+    }
+}
+
+// Download PDF report
+async function downloadPdfReport(testId) {
+    try {
+        const token = getToken();
+        if (!token) {
+            alert('Please log in to download reports');
+            return;
+        }
+
+        // Show loading indicator
+        const loadingMsg = document.createElement('div');
+        loadingMsg.id = 'pdfLoading';
+        loadingMsg.innerHTML = '<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;padding:20px 40px;border-radius:10px;z-index:9999;">⏳ Generating PDF report...</div>';
+        document.body.appendChild(loadingMsg);
+
+        const response = await fetch(`/api/results/${testId}/pdf`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        // Remove loading indicator
+        document.getElementById('pdfLoading')?.remove();
+
+        if (response.ok) {
+            // Get the filename from Content-Disposition header or use default
+            const contentDisposition = response.headers.get('Content-Disposition');
+            let filename = 'neuroscan_report.pdf';
+            if (contentDisposition) {
+                const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                if (filenameMatch && filenameMatch[1]) {
+                    filename = filenameMatch[1].replace(/['"]/g, '');
+                }
+            }
+
+            // Download the PDF
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            console.log('PDF downloaded successfully');
+        } else {
+            const error = await response.json();
+            alert(error.message || 'Failed to generate PDF report');
+        }
+    } catch (error) {
+        document.getElementById('pdfLoading')?.remove();
+        console.error('PDF download error:', error);
+        alert('Failed to download PDF. Please try again.');
     }
 }
 
