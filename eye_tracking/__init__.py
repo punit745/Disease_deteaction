@@ -11,7 +11,7 @@ from .data_models import EyeTrackingData, EyeMovementEvent
 from .preprocessor import EyeTrackingPreprocessor
 from .feature_extractor import FeatureExtractor
 from .analyzer import DiseaseAnalyzer
-from .visualizer import EyeTrackingVisualizer
+from .visualizer import Visualizer
 
 __all__ = [
     'EyeTrackingData',
@@ -19,5 +19,6 @@ __all__ = [
     'EyeTrackingPreprocessor',
     'FeatureExtractor',
     'DiseaseAnalyzer',
-    'EyeTrackingVisualizer',
+    'Visualizer',
 ]
+
