@@ -8,6 +8,7 @@
 [![Flask](https://img.shields.io/badge/Flask-2.3+-000000?style=flat-square&logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
+[![CI](https://github.com/punit745/Disease_deteaction/actions/workflows/ci.yml/badge.svg)](https://github.com/punit745/Disease_deteaction/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/badge/Version-2.0.0-blue?style=flat-square)](CHANGELOG.md)
 
 **An innovative web-based screening system for early detection of neurological and developmental disorders through AI-powered eye movement pattern analysis.**
