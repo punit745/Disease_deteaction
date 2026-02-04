@@ -68,3 +68,20 @@ ssl/
 *.pem
 *.key
 *.crt
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Flask instance folder
+instance/
+
+# Trained ML models (large binary files)
+models/*.joblib
+models/*.pkl
+models/*.h5
+
+# Node.js (if using any frontend build tools)
+node_modules/

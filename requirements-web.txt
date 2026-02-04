@@ -1,8 +1,5 @@
-Flask>=2.3.0
-Flask-SQLAlchemy>=3.0.0
-Flask-CORS>=4.0.0
-PyJWT>=2.8.0
+# Production-only dependencies (not needed for local development)
+# Install after: pip install -r requirements.txt
+
 gunicorn>=21.2.0
 psycopg2-binary>=2.9.0
-python-dotenv>=1.0.0
-reportlab>=4.0.0
