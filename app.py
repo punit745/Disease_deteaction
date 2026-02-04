@@ -10,7 +10,7 @@ This module provides a web interface for patients to:
 
 import os
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 from typing import Dict, Any
 
@@ -89,7 +89,7 @@ class User(db.Model):
     first_name = db.Column(db.String(80), nullable=False)
     last_name = db.Column(db.String(80), nullable=False)
     date_of_birth = db.Column(db.Date)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     last_login = db.Column(db.DateTime)
     is_active = db.Column(db.Boolean, default=True)
     
@@ -123,7 +123,7 @@ class TestResult(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
-    test_date = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+    test_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     task_type = db.Column(db.String(50))
     duration_ms = db.Column(db.Float)
     num_samples = db.Column(db.Integer)
@@ -185,7 +185,7 @@ def token_required(f):
         try:
             # Decode token
             data = jwt.decode(token, app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
-            current_user = User.query.get(data['user_id'])
+            current_user = db.session.get(User, data['user_id'])
             
             if not current_user or not current_user.is_active:
                 return jsonify({'message': 'User not found or inactive'}), 401
@@ -206,7 +206,7 @@ def health_check():
     """Health check endpoint."""
     return jsonify({
         'status': 'healthy',
-        'timestamp': datetime.utcnow().isoformat(),
+        'timestamp': datetime.now(timezone.utc).isoformat(),
         'version': '1.0.0'
     })
 
@@ -266,13 +266,13 @@ def login():
             return jsonify({'message': 'Account is inactive'}), 401
         
         # Update last login
-        user.last_login = datetime.utcnow()
+        user.last_login = datetime.now(timezone.utc)
         db.session.commit()
         
         # Generate JWT token
         token = jwt.encode({
             'user_id': user.id,
-            'exp': datetime.utcnow() + timedelta(hours=app.config['JWT_EXPIRATION_HOURS'])
+            'exp': datetime.now(timezone.utc) + timedelta(hours=app.config['JWT_EXPIRATION_HOURS'])
         }, app.config['JWT_SECRET_KEY'], algorithm='HS256')
         
         return jsonify({
